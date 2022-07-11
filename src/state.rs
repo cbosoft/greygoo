@@ -200,7 +200,16 @@ impl State {
                     },
                     TrialStatus::InProgress(bot_count) => {
                         if loud {
-                            println!("{} foo", bot_count)
+                            let pc = 100f32*bot_count / trial.target_count;
+                            let t_elapsed = trial.get_current_time_progress();
+                            let fmt_t_elapsed = fmt_t(t_elapsed as i64);
+                            let rising_ind = if trial.is_rising() {
+                                "📈"
+                            }
+                            else {
+                                "📉"
+                            };
+                            println!("Trial running: {} {:.0} bots currently active (~{:.1}% domination). {} elapsed", rising_ind, bot_count, pc, fmt_t_elapsed);
                         }
                     }
                 }

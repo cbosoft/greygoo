@@ -1,9 +1,7 @@
-use std::{thread, time};
 use chrono::Utc;
 
 use serde::{Deserialize, Serialize};
 
-const HALF_SEC: time::Duration = time::Duration::from_millis(500);
 const TAU: f32 = 300f32;
 
 
@@ -16,7 +14,7 @@ pub enum TrialStatus {
 #[derive(Deserialize, Serialize)]
 pub struct Trial {
     initial_bot_count: f32,
-    target_count: f32,
+    pub target_count: f32,
     death_chance: f32,
     birth_chance: f32,
     start_ts: i64,
@@ -48,13 +46,18 @@ impl Trial {
     pub fn get_current_time_progress(&self) -> f32 {
         let now_ts = Utc::now().naive_utc().timestamp();
         let now_dt = (now_ts - self.start_ts) as f32;
+        now_dt
+    }
+
+    pub fn get_current_time_progress_frac(&self) -> f32 {
+        let now_dt = self.get_current_time_progress();
         let all_dt = (self.end_ts - self.start_ts) as f32;
         now_dt / all_dt
     }
 
     pub fn get_status(&self) -> TrialStatus {
         let bot_count = self.get_current_number_bots();
-        let current_time_progress = self.get_current_time_progress();
+        let current_time_progress = self.get_current_time_progress_frac();
 
         if bot_count >= self.target_count {
             TrialStatus::Success
@@ -67,5 +70,9 @@ impl Trial {
                 TrialStatus::InProgress(bot_count)
             }
         }
+    }
+
+    pub fn is_rising(&self) -> bool {
+        (self.birth_chance - self.death_chance) > 1f32
     }
 }
