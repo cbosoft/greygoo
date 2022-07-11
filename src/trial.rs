@@ -1,6 +1,7 @@
 use chrono::Utc;
 
 use serde::{Deserialize, Serialize};
+use textplots::{Chart, Plot, Shape};
 
 const TAU: f32 = 300f32;
 
@@ -74,5 +75,23 @@ impl Trial {
 
     pub fn is_rising(&self) -> bool {
         (self.birth_chance - self.death_chance) > 1f32
+    }
+
+    pub fn plot(&self) {
+        let now_ts = Utc::now().naive_utc().timestamp();
+        let dt_ts = now_ts - self.start_ts;
+        let plot_str = Chart::new(64, 32, 0f32, dt_ts as f32)
+            .lineplot(&Shape::Continuous(Box::new(|t| self.initial_bot_count * (1f32 + self.birth_chance - self.death_chance).powf(t / TAU))))
+            .to_string();
+        let plot_lines: Vec<&str> = plot_str.split("\n").collect();
+
+        let ylabel = "  count                        ";
+        let xlabel = "                 time  ";
+        let ychars: Vec<char> = ylabel.chars().collect();
+        for i in 0..plot_lines.len()-1 {
+            println!(" {}  {}", ychars[i], plot_lines[i]);
+        }
+        println!("{}", xlabel);
+
     }
 }

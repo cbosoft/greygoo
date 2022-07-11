@@ -235,6 +235,7 @@ impl State {
                             else {
                                 "📉"
                             };
+                            trial.plot();
                             println!("Trial running: {} {:.0} bots currently active (~{:.1}% domination). {} elapsed", rising_ind, bot_count, pc, fmt_t_elapsed);
                         }
                     }
