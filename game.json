@@ -1,0 +1,18 @@
+{
+  "world_mass": 1e27,
+  "modifiers": {
+    "miniaturisation I": {
+      "description": "Smaller robots are easier to make more of. More robots = better.",
+      "mass_mult": 0.01,
+      "production_mult": 230.0,
+      "time_cost": "5m"
+    },
+    "miniaturisation II": {
+      "description": "Even smaller robots are easier to make more of. Even more robots = even more better.",
+      "mass_mult": 0.1,
+      "production_mult": 13.5,
+      "time_cost": "15m",
+      "locked_by": "miniaturisation I"
+    }
+  }
+}
