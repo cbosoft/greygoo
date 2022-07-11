@@ -172,6 +172,32 @@ impl State {
         Ok(Trial::new(bot_count, bot_mass, self.game.world_mass, death_chance, birth_chance))
     }
 
+    pub fn start_trial(&mut self) {
+        if self.trial_in_progress.is_some() {
+            println!("Cannot start a new trial while another is in progress.");
+        }
+        else if let Ok(trial) = self.get_trial() {
+            let _ = self.trial_in_progress.insert(trial);
+            println!("New trial begun!")
+        }
+        else {
+            println!("Could not start trial - something went wrong!");
+        }
+    }
+
+    pub fn stop_trial(&mut self) {
+        if self.trial_in_progress.is_some() {
+            let bc = self.trial_in_progress.as_ref().unwrap().get_current_number_bots();
+            let t_wasted = self.trial_in_progress.as_ref().unwrap().get_current_time_progress() as i64;
+            let fmt_t_wasted = fmt_t(t_wasted);
+            self.trial_in_progress = None;
+            println!("Trial cancelled. {:.0} bots were silenced. {} of research time, wasted.", bc, fmt_t_wasted);
+        }
+        else {
+            println!("No trial to cancel.")
+        }
+    }
+
     pub fn check_research_progress(&self, loud: bool) {
         if self.modifiers_in_progress.len() > 0 {
             let now_ts = Utc::now().naive_utc().timestamp();
