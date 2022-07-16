@@ -10,6 +10,7 @@ use crate::trial::{
 };
 use crate::game::Game;
 use crate::read_file_contents::get_contents;
+use crate::write_file_contents::write_contents;
 use crate::fmt_t::fmt_t;
 
 #[derive(Serialize, Deserialize)]
@@ -34,7 +35,7 @@ impl State {
 
     pub fn save(&self, filename: &str) {
         let fc = serde_json::to_string(self).expect("could not serialise");
-        crate::write_file_contents::write_contents(filename, fc.as_str()).unwrap();
+        write_contents(filename, fc.as_str()).unwrap();
     }
 
     pub fn update_modifiers_in_progress(&mut self) {
