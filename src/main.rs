@@ -6,6 +6,7 @@ mod modifier;
 mod read_file_contents;
 mod write_file_contents;
 mod game;
+mod fmt_t;
 
 fn main() {
     // options
