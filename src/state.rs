@@ -30,6 +30,7 @@ impl State {
         let contents = get_contents(filename).unwrap();
         let mut w: State = serde_json::from_str(&contents).unwrap();
         w.update_modifiers_in_progress();
+        w.update_trial_in_progress();
         w
     }
 
@@ -38,7 +39,7 @@ impl State {
         write_contents(filename, fc.as_str()).unwrap();
     }
 
-    pub fn update_modifiers_in_progress(&mut self) {
+    fn update_modifiers_in_progress(&mut self) {
         let now = Utc::now().naive_utc().timestamp();
         let mut newly_complete_modifiers: HashSet<String> = HashSet::new();
         for (mod_name, ts_complete) in &self.modifiers_in_progress {
@@ -51,12 +52,29 @@ impl State {
         self.modifiers_in_progress.retain(|(n, _tsc)| !newly_complete_modifiers.contains(n));
     }
 
+    fn update_trial_in_progress(&mut self) {
+        if self.trial_in_progress.is_some() {
+            self.trial_in_progress.as_mut().unwrap().update(&self.game, &mut self.active_modifiers);
+        }
+    }
+
     fn get_potential_modifiers(&self) -> Option<HashMap<&String, &Modifier>> {
         let game = &self.game;
         if game.modifiers.len() > 0 {
             let mut potential_modifiers: HashMap<&String, &Modifier> = HashMap::new();
             for (mod_name, modifier) in &game.modifiers {
-                if modifier.locked_by.is_empty() || self.active_modifiers.contains(&modifier.locked_by) {
+
+                let mut ok = true;
+                if !modifier.locked_by.is_empty() {
+                    for locking_mod_name in &modifier.locked_by {
+                        if !self.active_modifiers.contains(locking_mod_name) {
+                            ok = false;
+                            break;
+                        }
+                    }
+                }
+
+                if ok {
                     potential_modifiers.insert(mod_name, modifier);
                 }
             }
@@ -106,7 +124,7 @@ impl State {
                 else {
                     if self.game.modifiers.contains_key(sr_mod_name) {
                         let modif = self.game.modifiers.get(sr_mod_name).unwrap();
-                        println!("Cannot research \"{}\", as it is locked by \"{}\"", sr_mod_name, modif.locked_by);
+                        println!("Cannot research \"{}\", as it is locked", sr_mod_name);
                     }
                     else {
                         println!("Cannot research \"{}\", no such modifier!", sr_mod_name);
@@ -120,34 +138,7 @@ impl State {
     }
 
     fn get_trial(&self) -> Result<Trial, ()> {
-
-        let mut bot_mass = 1.0f32;
-        let mut birth_chance: f32 = 1.;
-        let mut death_chance: f32 = 1.1;
-        let mut bot_count: f32 = 100.0;
-
-        let nmods = self.active_modifiers.len();
-        if nmods > 0 {
-            for mod_name in &self.active_modifiers {
-                println!("Modifiers:");
-                if let Some(modifier) = self.game.modifiers.get(mod_name.as_str()) {
-                    bot_mass *= modifier.mass_mult;
-                    birth_chance *= modifier.birth_rate_mult;
-                    death_chance *= modifier.death_rate_mult;
-                    bot_count *= modifier.production_mult;
-                    println!(" - {}", mod_name);
-                }
-                else {
-                    println!("Could not find specified active modifier \"{}\".", mod_name);
-                    return Err(())
-                }
-            }
-        }
-        else {
-            println!("No active modifiers.");
-        }
-
-        Ok(Trial::new(bot_count, bot_mass, self.game.world_mass, death_chance, birth_chance))
+        Ok(Trial::new(&self.game, &self.active_modifiers))
     }
 
     pub fn start_trial(&mut self) {
@@ -164,16 +155,16 @@ impl State {
     }
 
     pub fn stop_trial(&mut self) {
-        if self.trial_in_progress.is_some() {
-            let bc = self.trial_in_progress.as_ref().unwrap().get_current_number_bots();
-            let t_wasted = self.trial_in_progress.as_ref().unwrap().get_current_time_progress() as i64;
-            let fmt_t_wasted = fmt_t(t_wasted);
-            self.trial_in_progress = None;
-            println!("Trial cancelled. {:.0} bots were silenced. {} of research time, wasted.", bc, fmt_t_wasted);
-        }
-        else {
-            println!("No trial to cancel.")
-        }
+        // if self.trial_in_progress.is_some() {
+        //     let bc = self.trial_in_progress.as_ref().unwrap().get_current_number_bots();
+        //     let t_wasted = self.trial_in_progress.as_ref().unwrap().get_current_time_progress() as i64;
+        //     let fmt_t_wasted = fmt_t(t_wasted);
+        //     self.trial_in_progress = None;
+        //     println!("Trial cancelled. {:.0} bots were silenced. {} of research time, wasted.", bc, fmt_t_wasted);
+        // }
+        // else {
+        //     println!("No trial to cancel.")
+        // }
     }
 
     pub fn check_research_progress(&self, loud: bool) {
@@ -195,26 +186,27 @@ impl State {
     pub fn check_trial_progress(&self, loud: bool) {
         match &self.trial_in_progress {
             Some(trial) => {
-                match trial.get_status() {
+                match trial.get_status(&self.game) {
                     TrialStatus::Failure => {
                         println!("Trial failed!")
                     },
                     TrialStatus::Success => {
                         println!("Trial success! You win!")
                     },
-                    TrialStatus::InProgress(bot_count) => {
+                    TrialStatus::InProgress(bot_mass) => {
                         if loud {
-                            let pc = 100f32*bot_count / trial.target_count;
-                            let t_elapsed = trial.get_current_time_progress();
-                            let fmt_t_elapsed = fmt_t(t_elapsed as i64);
-                            let rising_ind = if trial.is_rising() {
-                                "📈"
-                            }
-                            else {
-                                "📉"
-                            };
-                            trial.plot();
-                            println!("Trial running: {} {:.0} bots currently active (~{:.1}% domination). {} elapsed", rising_ind, bot_count, pc, fmt_t_elapsed);
+                            // let pc = 100f32*bot_count / trial.target_count;
+                            // let t_elapsed = trial.get_current_time_progress();
+                            // let fmt_t_elapsed = fmt_t(t_elapsed as i64);
+                            // let rising_ind = if trial.is_rising() {
+                            //     "📈"
+                            // }
+                            // else {
+                            //     "📉"
+                            // };
+                            // trial.plot();
+                            // println!("Trial running: {} {:.0} bots currently active (~{:.1}% domination). {} elapsed", rising_ind, bot_count, pc, fmt_t_elapsed);
+                            println!("Trial is in progress. {:.2e}", bot_mass)
                         }
                     }
                 }

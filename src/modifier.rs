@@ -3,32 +3,32 @@ use std::str::FromStr;
 use serde::Deserialize;
 use regex::Regex;
 
-fn one() -> f32 { 1f32 }
-fn zero() -> f32 { 0f32 }
+fn one() -> f64 { 1f64 }
+fn zero() -> f64 { 0f64 }
 
 #[derive(Deserialize)]
 pub struct Modifier {
     pub description: String,
 
+    // Stats
     #[serde(default="one")]
-    pub mass_mult: f32,
+    pub initial_mass_mult: f64,
 
     #[serde(default="one")]
-    pub production_mult: f32,
+    pub growth_rate_mult: f64,
 
     #[serde(default="one")]
-    pub birth_rate_mult: f32,
+    pub death_rate_mult: f64,
 
-    #[serde(default="one")]
-    pub death_rate_mult: f32,
-
+    // Costs
     time_cost: String,
 
     #[serde(default="zero")]
-    pub mass_cost: f32,
+    pub mass_cost: f64,
 
+    // Prerequisites
     #[serde(default)]
-    pub locked_by: String,
+    pub locked_by: Vec<String>,
 }
 
 impl Modifier {
