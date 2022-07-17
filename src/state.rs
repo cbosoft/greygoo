@@ -21,9 +21,12 @@ pub struct State {
     pub modifiers_in_progress: Vec<(String, i64)>,
     pub trial_in_progress: Option<Trial>,
     
-    // Permanent stats, e.g.
+    // Permanent stats
     #[serde(default="zero")]
     pub population_unease: f64,
+    
+    #[serde(default="zero")]
+    pub scientific_inspiration: f64,
 
     #[serde(skip)]
     pub game: Game
