@@ -6,9 +6,7 @@ use regex::Regex;
 
 use crate::serde_default_funcs::zero;
 use crate::effect::Effect;
-use crate::game::Game;
 use crate::state::State;
-use crate::trial::Trial;
 
 #[derive(Deserialize)]
 pub struct Modifier {
@@ -20,7 +18,7 @@ pub struct Modifier {
     time_cost: String,
 
     #[serde(default="zero")]
-    pub mass_cost: f64,
+    pub inspiration_cost: f64,
 
     // Prerequisites
     #[serde(default)]
