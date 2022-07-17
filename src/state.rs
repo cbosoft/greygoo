@@ -169,16 +169,17 @@ impl State {
     }
 
     pub fn stop_trial(&mut self) {
-        // if self.trial_in_progress.is_some() {
-        //     let bc = self.trial_in_progress.as_ref().unwrap().get_current_number_bots();
-        //     let t_wasted = self.trial_in_progress.as_ref().unwrap().get_current_time_progress() as i64;
-        //     let fmt_t_wasted = fmt_t(t_wasted);
-        //     self.trial_in_progress = None;
-        //     println!("Trial cancelled. {:.0} bots were silenced. {} of research time, wasted.", bc, fmt_t_wasted);
-        // }
-        // else {
-        //     println!("No trial to cancel.")
-        // }
+        if self.trial_in_progress.is_some() {
+            let bot_mass = self.trial_in_progress.as_ref().unwrap().bot_mass;
+            let fmt_bot_mass = fmt_mass(bot_mass);
+            let t_wasted = self.trial_in_progress.as_ref().unwrap().get_current_time_progress() as i64;
+            let fmt_t_wasted = fmt_t(t_wasted);
+            self.trial_in_progress = None;
+            println!("Trial cancelled. {} of bots were silenced. {} of research time, wasted.", fmt_bot_mass, fmt_t_wasted);
+        }
+        else {
+            println!("No trial to cancel.")
+        }
     }
 
     pub fn check_research_progress(&self, loud: bool) {
