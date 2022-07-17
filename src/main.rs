@@ -9,6 +9,7 @@ mod game;
 mod fmt_t;
 mod effect;
 mod serde_default_funcs;
+mod fmt_mass;
 
 fn main() {
     // options
