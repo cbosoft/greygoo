@@ -174,16 +174,22 @@ impl State {
     }
 
     pub fn stop_trial(&mut self) {
+        self.stop_or_fail_trial(false);
+    }
+
+    fn stop_or_fail_trial(&mut self, is_failure: bool) {
         if self.trial_in_progress.is_some() {
             let bot_mass = self.trial_in_progress.as_ref().unwrap().bot_mass;
             let fmt_bot_mass = fmt_mass(bot_mass);
             let t_wasted = self.trial_in_progress.as_ref().unwrap().get_current_time_progress() as i64;
             let fmt_t_wasted = fmt_t(t_wasted);
             self.trial_in_progress = None;
-            println!("Trial cancelled. {} of bots were silenced. {} of research time, wasted.", fmt_bot_mass, fmt_t_wasted);
+            let stopped = if is_failure { "failed" } else { "stopped" };
+            println!("Trial {}. {} of bots were silenced. {} of research time, wasted.", stopped, fmt_bot_mass, fmt_t_wasted);
         }
         else {
-            println!("No trial to cancel.")
+            let stop = if is_failure { "mark as failed" } else { "stop" };
+            println!("No active trial to {}.", stop);
         }
     }
 
@@ -203,15 +209,16 @@ impl State {
         }
     }
 
-    pub fn check_trial_progress(&self, loud: bool) {
+    pub fn check_trial_progress(&mut self, loud: bool) {
         match &self.trial_in_progress {
             Some(trial) => {
                 match trial.get_status(&self.game) {
                     TrialStatus::Failure => {
-                        println!("Trial failed!")
+                        self.stop_or_fail_trial(true);
                     },
                     TrialStatus::Success => {
-                        println!("Trial success! You win!")
+                        println!("Trial success! You win!");
+                        self.trial_in_progress = None;
                     },
                     TrialStatus::InProgress(bot_mass) => {
                         if loud {
