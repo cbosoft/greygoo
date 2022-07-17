@@ -12,6 +12,7 @@ use crate::game::Game;
 use crate::read_file_contents::get_contents;
 use crate::write_file_contents::write_contents;
 use crate::fmt_t::fmt_t;
+use crate::fmt_mass::fmt_mass;
 use crate::serde_default_funcs::zero;
 
 #[derive(Serialize, Deserialize)]
@@ -208,9 +209,10 @@ impl State {
                     },
                     TrialStatus::InProgress(bot_mass) => {
                         if loud {
-                            // let pc = 100f32*bot_count / trial.target_count;
-                            // let t_elapsed = trial.get_current_time_progress();
-                            // let fmt_t_elapsed = fmt_t(t_elapsed as i64);
+                            let fmt_bot_mass = fmt_mass(bot_mass);
+                            let pc = 100f64 * bot_mass / self.game.world_mass;
+                            let t_elapsed = trial.get_current_time_progress();
+                            let fmt_t_elapsed = fmt_t(t_elapsed as i64);
                             // let rising_ind = if trial.is_rising() {
                             //     "📈"
                             // }
@@ -218,8 +220,7 @@ impl State {
                             //     "📉"
                             // };
                             // trial.plot();
-                            // println!("Trial running: {} {:.0} bots currently active (~{:.1}% domination). {} elapsed", rising_ind, bot_count, pc, fmt_t_elapsed);
-                            println!("Trial is in progress. {:.2e}", bot_mass)
+                            println!("Trial running // Bots totalling {} (~{:.1}% domination) // {} elapsed", fmt_bot_mass, pc, fmt_t_elapsed);
                         }
                     }
                 }

@@ -54,11 +54,11 @@ impl Trial {
     //     self.initial_bot_count * a.powf(dt / TAU)
     // }
     //
-    // pub fn get_current_time_progress(&self) -> f32 {
-    //     let now_ts = Utc::now().naive_utc().timestamp();
-    //     let now_dt = (now_ts - self.start_ts) as f32;
-    //     now_dt
-    // }
+    pub fn get_current_time_progress(&self) -> f32 {
+        let now_ts = Utc::now().naive_utc().timestamp();
+        let now_dt = (now_ts - self.start_ts) as f32;
+        now_dt
+    }
     //
     // pub fn get_current_time_progress_frac(&self) -> f32 {
     //     let now_dt = self.get_current_time_progress();
