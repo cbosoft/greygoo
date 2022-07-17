@@ -36,7 +36,9 @@ pub struct State {
 pub struct Stats {
     pub initial_bot_mass: f64,
     pub growth_rate: f64,
-    pub death_rate: f64
+    pub death_rate: f64,
+    pub unease_gain: f64,
+    pub inspiration_gain: f64
 }
 
 
@@ -239,7 +241,10 @@ impl State {
         let mut stats = Stats{
             initial_bot_mass: 1f64,
             growth_rate: 1f64,
-            death_rate: 1f64
+            death_rate: 1f64,
+
+            unease_gain: 0.01f64,
+            inspiration_gain: 0.01f64
         };
 
         for mod_name in &self.active_modifiers {
@@ -248,6 +253,8 @@ impl State {
                     stats.initial_bot_mass *= effect.initial_mass_mult;
                     stats.growth_rate *= effect.growth_rate_mult;
                     stats.death_rate *= effect.death_rate_mult;
+                    stats.unease_gain *= effect.unease_gain_mult;
+                    stats.inspiration_gain *= effect.inspiration_gain_mult;
                 }
             }
         }
@@ -296,7 +303,20 @@ impl State {
         let stats = self.get_stats();
         if let Some(trial) = self.trial_in_progress.as_mut() {
             let dt = (until_ts - trial.last_update_ts) as f64;
+
+            // grow robots (exponential)
             trial.bot_mass *= (1f64 + stats.growth_rate - stats.death_rate).powf(dt / self.game.tau);
+
+            // Grow unease (linear)
+            self.population_unease += stats.unease_gain * (dt / self.game.tau);
+            if self.population_unease > 100f64 {
+                self.population_unease = 100f64;
+            }
+
+            // Gain inspiration (also linear)
+            self.scientific_inspiration += stats.inspiration_gain * (dt / self.game.tau);
+
+            // mark update time
             trial.last_update_ts = until_ts;
         }
     }

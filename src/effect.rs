@@ -22,6 +22,12 @@ pub struct Effect {
     #[serde(default="one")]
     pub death_rate_mult: f64,
 
+    #[serde(default="one")]
+    pub unease_gain_mult: f64,
+
+    #[serde(default="one")]
+    pub inspiration_gain_mult: f64,
+
     #[serde(default)]
     pub condition: String
 }
