@@ -38,7 +38,7 @@ impl Trial {
         if self.bot_mass >= game.world_mass {
             TrialStatus::Success
         }
-        else if self.bot_mass <= 1f64 {
+        else if self.bot_mass <= 0f64 {
             TrialStatus::Failure
         }
         else {
