@@ -40,8 +40,6 @@ impl Effect {
                     let cond_op_is_greater = c[1].eq("greater");
                     let cond_bot_mass = f64::from_str(&c[2]).expect("COND_TRIAL_BOT_MASS float parse fail");
 
-                    println!("trial bot mass matches: {}", cond_bot_mass);
-
                     if cond_op_is_greater {
                         trial.bot_mass > cond_bot_mass
                     }
