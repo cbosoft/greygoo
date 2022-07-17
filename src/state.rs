@@ -166,6 +166,7 @@ impl State {
         }
         else if let Ok(trial) = self.get_trial() {
             let _ = self.trial_in_progress.insert(trial);
+            self.scientific_inspiration += 0.5f64;
             println!("New trial begun!")
         }
         else {
