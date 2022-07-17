@@ -55,25 +55,13 @@ impl Effect {
                 let cond_op_is_greater = c[1].eq("greater");
                 let cond_unease = f64::from_str(&c[2]).expect("COND_POP_UNEASE float parse fail");
 
-                if let Some(trial) = &state.trial_in_progress {
-                    // use trial popunease
-                    if cond_op_is_greater {
-                        trial.population_unease > cond_unease
-                    }
-                    else {
-                        trial.population_unease < cond_unease
-                    }
+                if cond_op_is_greater {
+                    state.population_unease > cond_unease
                 }
                 else {
-                    // not currently in trial...
-                    // use game pop unease
-                    if cond_op_is_greater {
-                        state.population_unease > cond_unease
-                    }
-                    else {
-                        state.population_unease < cond_unease
-                    }
+                    state.population_unease < cond_unease
                 }
+
             }
             else {
                 false

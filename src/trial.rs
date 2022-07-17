@@ -18,7 +18,6 @@ pub enum TrialStatus {
 pub struct Trial {
     // Progress
     pub bot_mass: f64,
-    pub population_unease: f64,
 
     // Timings
     pub start_ts: i64,
@@ -31,7 +30,7 @@ impl Trial {
         let last_update_ts = start_ts;
 
         Trial {
-            bot_mass: stats.initial_bot_mass, population_unease: 0f64, start_ts, last_update_ts
+            bot_mass: stats.initial_bot_mass, start_ts, last_update_ts
         }
     }
 
