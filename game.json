@@ -1,16 +1,29 @@
 {
+  "tau": 300,
   "world_mass": 1e27,
   "modifiers": {
     "miniaturisation I": {
-      "description": "Smaller robots are easier to make more of. More robots = better.",
-      "initial_mass_mult": 0.01,
-      "growth_rate_mult": 1.1,
+      "description": "Smaller robots are easier to make more of. More robots = more better.",
+      "effects": {
+        "default": {
+          "initial_mass_mult": 0.01,
+          "growth_rate_mult": 2.0
+        },
+        "foo": {
+          "growth_rate_mult": 1.1,
+          "condition": "trial bot mass greater than 1e1"
+        }
+      },
       "time_cost": "5m"
     },
     "miniaturisation II": {
       "description": "Even smaller robots are easier to make more of. Even more robots = even more better.",
-      "initial_mass_mult": 0.1,
-      "growth_rate_mult": 1.05,
+      "effects": {
+        "default": {
+          "initial_mass_mult": 0.1,
+          "growth_rate_mult": 1.05
+        }
+      },
       "time_cost": "15m",
       "locked_by": ["miniaturisation I"]
     }

@@ -7,6 +7,8 @@ mod read_file_contents;
 mod write_file_contents;
 mod game;
 mod fmt_t;
+mod effect;
+mod serde_default_funcs;
 
 fn main() {
     // options

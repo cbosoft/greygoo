@@ -1,13 +1,11 @@
-use std::os::macos::raw::stat;
 use chrono::Utc;
 
 use serde::{Deserialize, Serialize};
 use textplots::{Chart, Plot, Shape};
 
 use crate::game::Game;
+use crate::state::Stats;
 // use crate::modifier::Modifier;
-
-const TAU: f64 = 300f64;
 
 
 pub enum TrialStatus {
@@ -19,63 +17,30 @@ pub enum TrialStatus {
 #[derive(Deserialize, Serialize)]
 pub struct Trial {
     // Progress
-    bot_mass: f64,
-    population_unease: f64,
+    pub bot_mass: f64,
+    pub population_unease: f64,
 
     // Timings
-    start_ts: i64,
-    last_update_ts: i64,
+    pub start_ts: i64,
+    pub last_update_ts: i64,
 }
 
 impl Trial {
-    pub fn new(game: &Game, modifiers: &Vec<String>) -> Trial {
+    pub fn new(stats: Stats) -> Trial {
         let start_ts = Utc::now().timestamp();
         let last_update_ts = start_ts;
-
-        let stats = game.get_stats(modifiers).unwrap();
 
         Trial {
             bot_mass: stats.initial_bot_mass, population_unease: 0f64, start_ts, last_update_ts
         }
     }
 
-    pub fn update(&mut self, game: &Game, modifiers: &mut Vec<String>) -> Vec<String> {
-        let mut events: Vec<String> = Vec::new();
-        let current_ts = Utc::now().timestamp();
-        let mut next_event_ts = 0i64;
-        while next_event_ts < current_ts {
-            // find out when the next event will run and what it will be
-            let (next_event_dt, next_event) = self.get_next_event();
-            next_event_ts = self.last_update_ts + next_event_dt;
-
-            // run up to when the event should fire
-            self.update_until(next_event_ts, game, modifiers);
-
-            // run event, note it down too.
-            events.push(next_event.to_string());
-            // game.run_event(&next_event, modifiers);
-        };
-
-        if self.last_update_ts < current_ts {
-            self.update_until(current_ts, game, modifiers);
-        }
-
-        events
-    }
-
-    fn get_next_event(&self) -> (i64, String) {
-        (1_000_000i64, "foo".to_string())
-    }
-
-    fn update_until(&mut self, until_ts: i64, game: &Game, modifiers: &Vec<String>) {
-        let stats = game.get_stats(modifiers).unwrap();
-        let dt = (until_ts - self.last_update_ts) as f64;
-        self.bot_mass *= (1f64 + stats.growth_rate - stats.death_rate).powf(dt / TAU);
-    }
-
     pub fn get_status(&self, game: &Game) -> TrialStatus {
         if self.bot_mass >= game.world_mass {
             TrialStatus::Success
+        }
+        else if self.bot_mass <= 1f64 {
+            TrialStatus::Failure
         }
         else {
             TrialStatus::InProgress(self.bot_mass)

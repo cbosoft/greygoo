@@ -12,15 +12,27 @@ use crate::game::Game;
 use crate::read_file_contents::get_contents;
 use crate::write_file_contents::write_contents;
 use crate::fmt_t::fmt_t;
+use crate::serde_default_funcs::zero;
 
 #[derive(Serialize, Deserialize)]
 pub struct State {
-    active_modifiers: Vec<String>,
-    modifiers_in_progress: Vec<(String, i64)>,
-    trial_in_progress: Option<Trial>,
+    pub active_modifiers: Vec<String>,
+    pub modifiers_in_progress: Vec<(String, i64)>,
+    pub trial_in_progress: Option<Trial>,
+    
+    // Permanent stats, e.g.
+    #[serde(default="zero")]
+    pub population_unease: f64,
 
     #[serde(skip)]
-    game: Game
+    pub game: Game
+}
+
+#[derive(Debug)]
+pub struct Stats {
+    pub initial_bot_mass: f64,
+    pub growth_rate: f64,
+    pub death_rate: f64
 }
 
 
@@ -54,7 +66,7 @@ impl State {
 
     fn update_trial_in_progress(&mut self) {
         if self.trial_in_progress.is_some() {
-            self.trial_in_progress.as_mut().unwrap().update(&self.game, &mut self.active_modifiers);
+            self.update_trial();
         }
     }
 
@@ -138,7 +150,8 @@ impl State {
     }
 
     fn get_trial(&self) -> Result<Trial, ()> {
-        Ok(Trial::new(&self.game, &self.active_modifiers))
+        let stats = self.get_stats();
+        Ok(Trial::new(stats))
     }
 
     pub fn start_trial(&mut self) {
@@ -214,6 +227,72 @@ impl State {
             None => {
                 println!("No trial in progress.")
             }
+        }
+    }
+
+    pub fn get_stats(&self) -> Stats {
+        let mut stats = Stats{
+            initial_bot_mass: 1f64,
+            growth_rate: 1f64,
+            death_rate: 1f64
+        };
+
+        for mod_name in &self.active_modifiers {
+            if let Some(modifier) = self.game.modifiers.get(mod_name.as_str()) {
+                if let Some(effect) = modifier.get_effect(self) {
+                    stats.initial_bot_mass *= effect.initial_mass_mult;
+                    stats.growth_rate *= effect.growth_rate_mult;
+                    stats.death_rate *= effect.death_rate_mult;
+                }
+            }
+        }
+
+        stats
+    }
+
+
+    pub fn update_trial(&mut self) -> Vec<String> {
+        let mut events: Vec<String> = Vec::new();
+
+        if self.trial_in_progress.is_some() {
+            let current_ts = Utc::now().timestamp();
+
+            // find out when the next event will run and what it will be
+            let (mut next_event_dt, mut next_event) = self.get_next_event();
+            let mut next_event_ts = self.trial_in_progress.as_ref().unwrap().last_update_ts + next_event_dt;
+
+            while next_event_ts < current_ts {
+                // run up to when the event should fire
+                self.update_trial_until(next_event_ts);
+
+                // run event, note it down too.
+                events.push(next_event.clone());
+                // self.run_event(&next_event);
+
+                // find out when the next event will run and what it will be
+                (next_event_dt, next_event) = self.get_next_event();
+                next_event_ts = self.trial_in_progress.as_ref().unwrap().last_update_ts + next_event_dt;
+            };
+
+            let trial = self.trial_in_progress.as_mut().unwrap();
+            if trial.last_update_ts < current_ts {
+                self.update_trial_until(current_ts);
+            }
+        }
+
+        events
+    }
+
+    fn get_next_event(&self) -> (i64, String) {
+        (1_000_000i64, "foo".to_string())
+    }
+
+    fn update_trial_until(&mut self, until_ts: i64) {
+        let stats = self.get_stats();
+        if let Some(trial) = self.trial_in_progress.as_mut() {
+            let dt = (until_ts - trial.last_update_ts) as f64;
+            trial.bot_mass *= (1f64 + stats.growth_rate - stats.death_rate).powf(dt / self.game.tau);
+            trial.last_update_ts = until_ts;
         }
     }
 }

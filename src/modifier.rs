@@ -1,24 +1,20 @@
 use std::str::FromStr;
+use std::collections::HashMap;
 
 use serde::Deserialize;
 use regex::Regex;
 
-fn one() -> f64 { 1f64 }
-fn zero() -> f64 { 0f64 }
+use crate::serde_default_funcs::zero;
+use crate::effect::Effect;
+use crate::game::Game;
+use crate::state::State;
+use crate::trial::Trial;
 
 #[derive(Deserialize)]
 pub struct Modifier {
     pub description: String,
 
-    // Stats
-    #[serde(default="one")]
-    pub initial_mass_mult: f64,
-
-    #[serde(default="one")]
-    pub growth_rate_mult: f64,
-
-    #[serde(default="one")]
-    pub death_rate_mult: f64,
+    pub effects: HashMap<String, Effect>,
 
     // Costs
     time_cost: String,
@@ -48,5 +44,21 @@ impl Modifier {
         else {
             panic!("time cost not in expected format! Should be \"\\d+[wdhms]\", but got \"{}\".", self.time_cost);
         }
+    }
+
+    pub fn get_effect(&self, state: &State) -> Option<&Effect> {
+        let mut rv: Option<&Effect> = self.effects.get("default");
+
+        let mut effects: Vec<&String> = (&self.effects).into_iter().map(|(s, _)| s).collect();
+        effects.retain(|s| s.ne(&"default"));
+        effects.sort();
+
+        for (name, effect) in &self.effects {
+            if effect.is_triggered(state) {
+                rv = Some(effect);
+            }
+        }
+
+        rv
     }
 }
