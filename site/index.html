@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>GreyGoo</title>
+    <style>
+        * {
+            font-family: sans-serif;
+            border: #dfdfdf;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .widget {
+            flex-grow: 1;
+            /* max-width: 500px; */
+            border-style: solid;
+        }
+
+        ul.tree {
+            border: solid;
+            display: flex;
+        }
+
+        .tree li {
+            display: flex;
+            flex-direction: column-reverse;
+            color: blue;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="widget">
+            <b>Research Tree</b>
+
+            <div style="overflow: scroll;">
+                <ul class="tree">
+                    <li>foo
+                        <ul>
+                            <li>nested</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="widget">
+            foo
+        </div>
+        <div class="widget">
+            foo
+        </div>
+        <div class="widget">
+            <b><u>Event Log</u></b><br>
+            <div
+                style="max-height: 100px; scroll-behavior: auto; overflow: scroll;">
+                <ul>
+                    <li>thing</li>
+                    <li>thing</li>
+                    <li>thing</li>
+                    <li>thing</li>
+                    <li>thing</li>
+                    <li>thing</li>
+                    <li>thing</li>
+                    <li>thing</li>
+                    <li>thing</li>
+                    <li>thing</li>
+                    <li>thing</li>
+                    <li>thing</li>
+                    <li>thing</li>
+                    <li>thing</li>
+                    <li>thing</li>
+                    <li>thing</li>
+                    <li>thing</li>
+                    <li>thing</li>
+                    <li>thing</li>
+                    <li>thing</li>
+                    <li>thing</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
